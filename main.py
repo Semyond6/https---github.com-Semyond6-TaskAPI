@@ -15,8 +15,6 @@ import json
 
 Base.metadata.create_all(bind=engine)
 
-#Работа с безопасностью
-
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -130,20 +128,20 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-#Основной код задания
-
 class Item(BaseModel):
     collections: Dict[str, list]
 
 @app.post("/amount")       
-def computing(item: Item) -> dict:
+def computing(item: Item):
+    'Синхронный метод загрузки файла типа dict для расчетов'
     calculeted = calc(item.collections)
     return {"amount": calculeted}
             
 @app.post("/async")
 async def async_computing(item: Item, 
                           current_user: User = Depends(get_current_active_user), 
-                          db: Session = Depends(get_db)) -> dict:
+                          db: Session = Depends(get_db)):
+    'Асинхронный метод загрузки файла типа dict для расчетов'
     calculeted = calc(item.collections)
     history = HistorySession(username=current_user.name, 
                              datain = str(item.collections), 
@@ -156,9 +154,10 @@ async def async_computing(item: Item,
     return {"amount": calculeted, "token": current_user.token}
 
 @app.post("/async/uploadfile/")
-async def create_upload_file(file: UploadFile = File(...), 
+async def async_upload_file(file: UploadFile = File(...), 
                              current_user: User = Depends(get_current_active_user), 
-                             db: Session = Depends(get_db)) -> dict:
+                             db: Session = Depends(get_db)):
+    'Асинхронный метод загрузки файла типа bytes для расчетов'
     read_file = await file.read()
     calculeted_file = calc_file(read_file)
     history = HistorySession(username=current_user.name, 

@@ -5,7 +5,7 @@ from sqlalchemy import  Column, Integer, String, Boolean, ForeignKey, DateTime
 
 #Работа с БД
 
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:1qazxcvb@localhost:5432/postgres"
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:1qazxcvb@db:5432/postgres"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL
