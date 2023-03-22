@@ -52,6 +52,7 @@ def create_person(data = Body(...,
         },
         ), 
         db: Session = Depends(get_db)):
+    'Метод создания нового пользователя'
     password = get_password_hash(data["password"])
     person = Person(name=data["name"], hashed_password=password)
     db.add(person)
@@ -60,16 +61,20 @@ def create_person(data = Body(...,
     return person.name
 
 def verify_password(plain_password, hashed_password):
+    'Метод верификации пароля'
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password):
+    'Метод хеширования пароля'
     return pwd_context.hash(password)
 
 def get_user(db, username: str):
+    'Метод поиска пользователя в базе данных'
     user = db.query(Person).filter(Person.name == username).first()
     return user
 
 def authenticate_user(username: str, password: str, db):
+    'Аутентификация пользователя'
     user = get_user(db, username)
     if not user:
         return False
@@ -78,6 +83,7 @@ def authenticate_user(username: str, password: str, db):
     return user
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    'Создание токена доступа'
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -88,6 +94,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    'Получение текущего пользователя'
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -109,12 +116,14 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     return user
 
 async def get_current_active_user(current_user: User = Depends(get_current_user)):
+    'Получение текущего активного пользователя'
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 @app.get("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    'Проверка авторизации пользователя и получения токена'
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(

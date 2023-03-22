@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import  Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy import  Column, Integer, String, Boolean, DateTime
 
 #Работа с БД
 
@@ -14,6 +14,7 @@ engine = create_engine(
 Base = declarative_base()
 
 class Person(Base):
+    'Таблица хранения пользователей'
     __tablename__ = "users"
  
     id = Column(Integer, primary_key=True, index=True)
@@ -22,6 +23,7 @@ class Person(Base):
     hashed_password = Column(String)
     
 class HistorySession(Base):
+    'Таблица хранения истории запросов'
     __tablename__ = "history"
     
     id = Column(Integer, primary_key=True, index=True)
